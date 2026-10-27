@@ -4,9 +4,11 @@
 # (reader.c) blits those via driver.so. generated/ ships pre-built font/cmap
 # dumps so there is NO host codegen step to cross-confuse. GUI/network/OCR off.
 set -e
-MUPDF=/home/tomaszz/sf3000-work/mupdf
-TCBIN=/home/tomaszz/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot/opt/ext-toolchain/bin
-SYSROOT=/home/tomaszz/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot/mipsel-buildroot-linux-gnu/sysroot
+# Paths can be overridden from the environment (CI sets them).
+MUPDF=${MUPDF:-$HOME/sf3000-work/mupdf}
+TOOLCHAIN=${TOOLCHAIN:-$HOME/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot}
+TCBIN=$TOOLCHAIN/opt/ext-toolchain/bin
+SYSROOT=$TOOLCHAIN/mipsel-buildroot-linux-gnu/sysroot
 PFX="$TCBIN/mips-mti-linux-gnu-"
 ARCH="-EL -mips32r2 -march=mips32r2 -mtune=74kc -mfp32 -mhard-float --sysroot=$SYSROOT"
 

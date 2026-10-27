@@ -1,10 +1,12 @@
 #!/bin/sh
 # Build the standalone ebook reader (reader.c + hwdisp) against libmupdf.
 set -e
-E=/home/tomaszz/sf3000-work/ebook
-MUPDF=/home/tomaszz/sf3000-work/mupdf
-TCBIN=/home/tomaszz/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot/opt/ext-toolchain/bin
-SYSROOT=/home/tomaszz/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot/mipsel-buildroot-linux-gnu/sysroot
+# Paths can be overridden from the environment (CI sets them).
+E=${E:-$(cd "$(dirname "$0")" && pwd)}
+MUPDF=${MUPDF:-$HOME/sf3000-work/mupdf}
+TOOLCHAIN=${TOOLCHAIN:-$HOME/sf3000-work/sf3000toolchain/mipsel-buildroot-linux-gnu_sdk-buildroot}
+TCBIN=$TOOLCHAIN/opt/ext-toolchain/bin
+SYSROOT=$TOOLCHAIN/mipsel-buildroot-linux-gnu/sysroot
 CC="$TCBIN/mips-mti-linux-gnu-gcc"
 CXX="$TCBIN/mips-mti-linux-gnu-g++"
 ARCH="-EL -mips32r2 -march=mips32r2 -mtune=74kc -mfp32 -mhard-float --sysroot=$SYSROOT"
