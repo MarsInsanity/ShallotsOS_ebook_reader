@@ -719,10 +719,46 @@ static void draw_toast(void) {
     draw_text(x + (w - tw)/2, y + h/2 + (int)(fs*0.36f), ui_reg, fs, toast_msg, 0xFFFF, 0);
 }
 
+/* Button hints over the footer, OnionOS style: a pill per button, then
+ * what it does. Shown when a book opens and toggled with START. */
+static uint64_t hints_until;
+static int hints_on;
+
+static int draw_pill(int x, int base, float fs, const char *key) {
+    int tw = text_w(ui_bold, fs, key), h = (int)(fs * 1.45f), w = tw + (int)(fs * 0.9f);
+    if (w < h) w = h;
+    fill_round(x, base - (int)(fs * 1.05f), w, h, h / 2, c_sel);
+    draw_text(x + (w - tw) / 2, base, ui_bold, fs, key, c_sel_text, 0);
+    return w;
+}
+static void draw_hints_bar(void) {
+    static const char *h[][2] = {
+        {"SELECT", "Menu"}, {"X", "Contents"}, {"Y", "Bookmark"},
+        {"UP/DOWN", "Chapter"}, {"START", "Hide"},
+    };
+    float fs = 13*S;
+    int gap = (int)(8*S), sep = (int)(18*S), w = 0;
+    for (size_t i = 0; i < sizeof h / sizeof h[0]; i++) {
+        int pw = text_w(ui_bold, fs, h[i][0]) + (int)(fs * 0.9f);
+        w += pw + gap + text_w(ui_reg, fs, h[i][1]) + sep;
+    }
+    w -= sep;
+    int bh = (int)(34*S), bw = w + (int)(28*S);
+    if (bw > PW - (int)(16*S)) bw = PW - (int)(16*S);
+    int bx = (PW - bw) / 2, by = PH - FOOTER_H - bh - (int)(6*S);
+    fill_round(bx, by, bw, bh, bh / 2, c_panel);
+    int x = bx + (int)(14*S), base = by + bh / 2 + (int)(fs * 0.36f);
+    for (size_t i = 0; i < sizeof h / sizeof h[0]; i++) {
+        x += draw_pill(x, base, fs, h[i][0]) + gap;
+        x += draw_text(x, base, ui_reg, fs, h[i][1], c_text, 0) + sep;
+    }
+}
+
 static void draw_reading(void) {
     render_page();
     if (mark_on(page) >= 0) draw_ribbon();
     draw_footer();
+    if (hints_on) draw_hints_bar();
     draw_toast();
     present();
 }
@@ -1020,16 +1056,24 @@ int main(int argc, char **argv) {
     marks_pages();
 
     int need_draw = 1;
+    hints_on = 1;                           /* show the buttons when a book opens */
+    hints_until = ticks_ms() + 6000;
     uint32_t prev = keys();
     uint64_t held = 0, rep = 0;
     for (;;) {
         if (need_draw) { need_draw = 0; draw_reading(); }
         if (toast_until && ticks_ms() >= toast_until) { toast_until = 0; toast_msg[0] = 0; need_draw = 1; }
+        if (hints_until && ticks_ms() >= hints_until) { hints_until = 0; hints_on = 0; need_draw = 1; }
 
         uint32_t k = keys(), pr = pressed(&prev, &held, &rep);
 
         if ((k & BIT(K_SELECT)) && (k & BIT(K_START))) { pos_save(); break; }
 
+        if ((pr & BIT(K_START)) && !(k & BIT(K_SELECT))) {
+            hints_on = !hints_on;
+            hints_until = 0;
+            need_draw = 1;
+        }
         if (pr & BIT(K_SELECT)) {
             if (menu_loop()) break;         /* quit from menu */
             need_draw = 1; prev = keys();

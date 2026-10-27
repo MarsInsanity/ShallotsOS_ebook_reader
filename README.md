@@ -30,6 +30,7 @@ argument.
 | Y | add or remove a bookmark on this page |
 | X | contents |
 | SELECT | menu |
+| START | show / hide the button hints (shown for a few seconds when a book opens) |
 | SELECT + START | quit (progress saved) |
 
 The menu has Contents, Bookmarks, a bookmark toggle, Text size, Font, Theme
